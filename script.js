@@ -1,26 +1,37 @@
-export default {
-  async fetch(request) {
-    const url = "https://api.clarifai.com/v2/models/food-item-recognition/versions/1d5fd481e0cf4826aa72ec3ff049e044/outputs";
-    const apiKey = "c74e79d837364c028103ab7d998a86a0"; // Replace with your actual Clarifai API key
+addEventListener("fetch", (event) => {
+  event.respondWith(handleRequest(event.request));
+});
 
-    const body = await request.text();
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Authorization": `Key ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: body
-    });
-
-    return new Response(response.body, {
-      status: response.status,
-      headers: {
-        "Access-Control-Allow-Origin": "*", // ✅ Fixes CORS
-        "Content-Type": "application/json"
-      }
+async function handleRequest(request) {
+  if (request.method === "OPTIONS") {
+    // Handle CORS preflight requests
+    return new Response(null, {
+      status: 204,
+      headers: getCorsHeaders(),
     });
   }
-};
+
+  try {
+    const data = await request.json();
+    // Process the request here...
+
+    return new Response(JSON.stringify({ message: "Success" }), {
+      status: 200,
+      headers: getCorsHeaders(),
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: getCorsHeaders(),
+    });
+  }
+}
+
+// Function to generate CORS headers
+function getCorsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*", // Allow all origins (for development)
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
